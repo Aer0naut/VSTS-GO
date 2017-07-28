@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VSTS-GO Extension Options</title>
+    <link rel="stylesheet" href="main.css">
+
+</head>
+<body>
+  <div class="optionsContainer">
+    <form id="optionsForm">
+
+      <label for="inputDomain">Domain</label> (https://{youraccount}.visualstudio.com):
+      <input class="options" type="url" id="inputDomain" required><br>
+
+      <Label for="inputCollection">Collection</Label>
+      <input class="options" type="text" id="inputCollection" required><br>
+
+      <Label for="inputAccessToken">Accesstoken</Label> <a href="https://www.visualstudio.com/en-us/docs/integrate/get-started/authentication/pats">( ? )</a>:
+      <input class="options" type="text" id="inputAccessToken" required pattern="[a-zA-Z0-9]+" title="Alphanumeric only">
+
+      <button id="save">Save</button>
+
+    </form>
+  </div>
+  <div id="status"></div>
+      <script src="options.js"></script>
+</body>
+</html>
