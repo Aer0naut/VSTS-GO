@@ -4,7 +4,7 @@ var collection;
 var vstsApiVersion = "?api-version=3.0";
 var vstsApiUrl = "_apis/wit/workItems/";
 var err = new errMsg();
-var latestItems = [];
+var recentItems = [];
 
 
 //Analytics------------------------
@@ -27,27 +27,18 @@ function loadConfig(){
         'userDomain',
         'userCollection',
         'userAccessToken',
-        'userLatestItems'
+        'userRecentItems'
         ], 
         function(items) {
             domain = items.userDomain;
             collection = items.userCollection;
             accesstoken = items.userAccessToken;
             //if items where previously saved, assign them to local array
-            if(items.userLatestItems){
-                latestItems.length=0;
-                latestItems = items.userLatestItems;
+            if(items.userRecentItems){
+                recentItems.length=0;
+                recentItems = items.userRecentItems;
                 console.log('previously saved items found');
             }
-
-      /*     latestItems = [
-            [1,'https:url','test title1'],
-            [22,'https:url','test title2 is really long and looooooong and extra long'],
-            [333,'https:url','test title3 is really long and looooooong and extra long'],
-            [44444,'https:url','test title4 is really long and looooooong and extra long'],
-            [555555,'https:url','test title5 is really long and looooooong and extra long'] 
-            ];
-*/
 
             if(configIsValid()){ 
                 //set eventlisteners by script to avoid security issues
@@ -59,10 +50,10 @@ function loadConfig(){
                     } 
                 });
 
-                if(latestItems.length>0){
-                    showLatestItems();
+                if(recentItems.length>0){
+                    showRecentItems();
                 }else{console.log('no item history')};
-
+                
                 document.getElementById("workItemId").focus();
 
             }
@@ -73,28 +64,28 @@ function loadConfig(){
     );
 }
 
-function showLatestItems(){
-//appends li children to the ul list of the latest items, and then shows the ul list
+function showRecentItems(){
+//appends li children to the ul list of the recent items, and then shows the ul list
    
-    var divLatestItems = document.getElementById('latestItems');
-    var ulLatestItems = document.createElement('ul');
+    var divRecentItems = document.getElementById('recentItems');
+    var ulRecentItems = document.createElement('ul');
 
-    divLatestItems.appendChild(ulLatestItems);
+    divRecentItems.appendChild(ulRecentItems);
 
-     console.log('length:'+ latestItems.length);
+     console.log('length:'+ recentItems.length);
 
-    for(var i in latestItems){
+    for(var i in recentItems){
         var li=document.createElement('li');
         li.className = 'listItem' + i;
-        ulLatestItems.appendChild(li);
+        ulRecentItems.appendChild(li);
 
         li.innerHTML+= '<a href="'+
-            latestItems[i][1]+'" target="_blank" title="'+latestItems[i][2]+'">'+
-            latestItems[i][0]+': '+latestItems[i][2]+'</a>';
+            recentItems[i][1]+'" target="_blank" title="'+recentItems[i][2]+'">'+
+            recentItems[i][0]+': '+recentItems[i][2]+'</a>';
 
-            console.log(i + ': '+latestItems[i][0]);
+            console.log(i + ': '+recentItems[i][0]);
         }
-        divLatestItems.style.display='block';  
+        divRecentItems.style.display='block';  
 }
 
 function formVstsApiUrl(wId){
@@ -168,22 +159,22 @@ function displayLoader(display){
 
 }
 
-function saveLatestItem(id,latestItemUrl,title){
+function saveRecentItem(id,recentItemUrl,title){
     //insert url,id and title in the first (0) place of the array
     //then store the array
 
-    latestItems.unshift([id,latestItemUrl,title]);
+    recentItems.unshift([id,recentItemUrl,title]);
     
     //Make sure the number of saved items in the array is max 5
-    if(latestItems.length>5){ 
-    latestItems.length = 5;
+    if(recentItems.length>5){ 
+    recentItems.length = 5;
     }
 
     chrome.storage.sync.set({
-    'userLatestItems': latestItems
+    'userRecentItems': recentItems
   }, function() {
     // Update 
-   console.log('stored latest items');
+   console.log('stored recent items');
   });
 }
 
@@ -210,7 +201,7 @@ function GetItem() {
                 },      
                 success: function(data){
                     var goUrl = formWorkItemURL(data.fields["System.TeamProject"], id);  
-                    saveLatestItem(id,goUrl,data.fields["System.Title"]);
+                    saveRecentItem(id,goUrl,data.fields["System.Title"]);
                     console.log(data.fields["System.Title"]);
                     window.open(goUrl , '_newtab');
                     displayLoader(false);
