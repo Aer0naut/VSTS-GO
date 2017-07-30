@@ -4,6 +4,8 @@ var collection;
 var vstsApiVersion = "?api-version=3.0";
 var vstsApiUrl = "_apis/wit/workItems/";
 var err = new errMsg();
+var recentItems = [];
+
 
 //Analytics------------------------
 var _gaq = _gaq || [];
@@ -24,12 +26,19 @@ function loadConfig(){
     chrome.storage.sync.get([
         'userDomain',
         'userCollection',
-        'userAccessToken'
+        'userAccessToken',
+        'userRecentItems'
         ], 
         function(items) {
             domain = items.userDomain;
             collection = items.userCollection;
             accesstoken = items.userAccessToken;
+            //if items where previously saved, assign them to local array
+            if(items.userRecentItems){
+                recentItems.length=0;
+                recentItems = items.userRecentItems;
+                console.log('previously saved items found');
+            }
 
             if(configIsValid()){ 
                 //set eventlisteners by script to avoid security issues
@@ -40,12 +49,43 @@ function loadConfig(){
                         document.getElementById("goButton").click();
                     } 
                 });
+
+                if(recentItems.length>0){
+                    showRecentItems();
+                }else{console.log('no item history')};
+                
+                document.getElementById("workItemId").focus();
+
             }
             else{
                 err.invalidConfiguration();
             }
         }   
     );
+}
+
+function showRecentItems(){
+//appends li children to the ul list of the recent items, and then shows the ul list
+   
+    var divRecentItems = document.getElementById('recentItems');
+    var ulRecentItems = document.createElement('ul');
+
+    divRecentItems.appendChild(ulRecentItems);
+
+     console.log('length:'+ recentItems.length);
+
+    for(var i in recentItems){
+        var li=document.createElement('li');
+        li.className = 'listItem' + i;
+        ulRecentItems.appendChild(li);
+
+        li.innerHTML+= '<a href="'+
+            recentItems[i][1]+'" target="_blank" title="'+recentItems[i][2]+'">'+
+            recentItems[i][0]+': '+recentItems[i][2]+'</a>';
+
+            console.log(i + ': '+recentItems[i][0]);
+        }
+        divRecentItems.style.display='block';  
 }
 
 function formVstsApiUrl(wId){
@@ -61,7 +101,7 @@ function formWorkItemURL(teamProject,id){
 function configIsValid(){
     if(!(accesstoken&&domain&&collection)){
         return false;
-    }
+    } 
 return true;
 }
 
@@ -109,16 +149,33 @@ function errMsg(){
 function displayLoader(display){
 
     if(display){
-        document.getElementById('workItemId').style.display='none';
-        document.getElementById('goButton').style.display='none';
-        document.getElementById('loader').style.display='block';
+        document.getElementById('container').style.display='none';
+        document.getElementById('divLoader').style.display='block';
         }
     else{
-        document.getElementById('workItemId').style.display='block';
-        document.getElementById('goButton').style.display='block';
-        document.getElementById('loader').style.display='none';
+        document.getElementById('divLoader').style.display='none';
+        document.getElementById('container').style.display='block';
     }
 
+}
+
+function saveRecentItem(id,recentItemUrl,title){
+    //insert url,id and title in the first (0) place of the array
+    //then store the array
+
+    recentItems.unshift([id,recentItemUrl,title]);
+    
+    //Make sure the number of saved items in the array is max 5
+    if(recentItems.length>5){ 
+    recentItems.length = 5;
+    }
+
+    chrome.storage.sync.set({
+    'userRecentItems': recentItems
+  }, function() {
+    // Update 
+   console.log('stored recent items');
+  });
 }
 
 function GetItem() {
@@ -134,6 +191,7 @@ function GetItem() {
   
             displayLoader(true);
 
+        //make VSTS API Call to retrieve item info
             $.ajax({ 
                 url:formVstsApiUrl(id),
                 type: "GET",
@@ -141,8 +199,11 @@ function GetItem() {
                 headers: {
                     'Authorization': 'Basic ' + btoa("" + ":" + accesstoken)
                 },      
-                success: function(data){    
-                    window.open(formWorkItemURL(data.fields["System.TeamProject"],id) , '_newtab');
+                success: function(data){
+                    var goUrl = formWorkItemURL(data.fields["System.TeamProject"], id);  
+                    saveRecentItem(id,goUrl,data.fields["System.Title"]);
+                    console.log(data.fields["System.Title"]);
+                    window.open(goUrl , '_newtab');
                     displayLoader(false);
                 },
                 error: function (jqXHR, status, error) {
@@ -159,6 +220,7 @@ function GetItem() {
         err.invalidConfiguration();
     }
 }
+
 
 //Load userconfig on pageload
 document.addEventListener('DOMContentLoaded', loadConfig());

@@ -1,8 +1,21 @@
-body {margin:0;padding:0}
-.container{width:120px;margin:2px;height:26px}
+html, body {margin:0;padding:0;}
+
+.container{
+  width:130px;
+}
+
+.inputTop{
+background-color: #0078dd;
+vertical-align: middle;
+text-align: center;
+display: table-cell;
+padding: 4px 4px 4px 4px;
+width:130px;
+border-radius: 5px;
+}
 .optionsContainer{margin:10px;}
-.column-left{ float: left; width: 84px; }
-.column-right{ float: right; width: 20px; }
+.column-left{float:left; width: 84px;}
+.column-right{float:right; width: 36px; }
 .error-Configure{min-width:150px; height: 100%;font-size: 10px;padding: 0px 5px 5px 5px}
 .error-Request{width: 200px; height: 100%;font-size: 10px;padding: 0px 5px 5px 5px}
 
@@ -17,15 +30,16 @@ font-size: 12px; font-weight: bold;
 
 input{
     width:100%; 
-    border-color: #1E6696;
-    border: 1px solid #1E6696; 
+    border-color: #0078dd;
+    border: 1px solid #0078dd; 
     border-radius: 4px; 
     padding: 5px 5px;
     box-sizing: border-box;
+    outline:none;
 }
 
 input.options:valid {
-  border: 1px solid #1E6696;
+  border: 1px solid #0078dd;
     margin: 4px 0px 10px 0px;
 }
 
@@ -37,8 +51,8 @@ input.options:invalid {
 button{
     float:right;
     padding: 3px 5px 3px 5px;
-    background-color:#1E6696;
-    border: 1px solid #1E6696;
+    background-color:#0078dd;
+    border: 1px solid #0078dd;
     border-radius: 4px; 
     color: white;
     text-decoration: none;
@@ -56,6 +70,58 @@ float:initial;
   margin-left: 10px;
 }
 
+#recentItems{
+  float: left;
+  clear: left;
+  margin: 0px 0px 0px 0px;
+  width:100%;
+  padding-top: 5px;
+  font-family: calibri, sans-serif;
+}
+
+#recentItems ul{
+padding:0px;
+margin: 0px;
+}
+
+#recentItems ul li{
+  white-space: nowrap;      /*keep the text on one line*/
+  overflow: hidden;         /*prevent the text from being shown outside the border*/
+  text-overflow: ellipsis;  /*cut off text with an elipsis*/
+  padding:0px 0px 1px 2px;
+}
+
+#recentItems ul li:hover{
+background-color: #0078dd;
+color:#ffffff;
+}
+
+#recentItems ul li a{
+text-decoration: none;
+font-size: 14px;
+color: inherit;
+}
+
+.listItem0{
+color:#4d4d4d;
+}
+
+.listItem1{
+color:
+#737373
+}
+.listItem2{
+color:#999999;
+}
+
+.listItem3{
+color:#bfbfbf;
+}
+
+.listItem4{
+color:#d9d9d9;
+}
+
 /*turn off number input spinners*/
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 
@@ -63,8 +129,10 @@ input[type=number]::-webkit-outer-spin-button {
   margin: 0; 
 }
 
-
 /*-----------------------------LOADER----------------------------*/
+#divLoader{
+width:130px;
+}
 .loader,
 .loader:before,
 .loader:after {
