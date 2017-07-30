@@ -7,10 +7,15 @@
     <link rel="stylesheet" href="main.css">
   </head>
   <body>
-    <div class="container">
-      <div class="column-left"><input type="number" id="workItemId" size="2" min="1" max="999999999"></div>
-      <div class="column-right"><button id="goButton">GO</button></div>
-      <div class="loader" id="loader" style="display:none;">Loading...</div>
+    <div id="container" class="container" >
+      <div class="inputTop">
+        <div class="column-left"><input type="number" id="workItemId" size="2" min="1" max="999999999"></div>
+        <div class="column-right"><button id="goButton">GO</button></div>
+      </div>
+    <div id="latestItems" style="display:none;"></div>
     </div>
+  <div id="divLoader" style="display:none;">
+    <div class="loader"></div>
+  <div>
   </body>
 </html>

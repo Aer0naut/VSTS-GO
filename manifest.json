@@ -3,7 +3,7 @@
   "name": "VSTS GO",
   "short_name": "VSTS GO",
   "description": "This extension will send you to a specific workitem in your VSTS, given the id",
-  "version": "1.3",
+  "version": "1.4",
   "icons": { 
     "128": "VSTS-GO.png" 
   },

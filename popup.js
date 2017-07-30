@@ -4,6 +4,8 @@ var collection;
 var vstsApiVersion = "?api-version=3.0";
 var vstsApiUrl = "_apis/wit/workItems/";
 var err = new errMsg();
+var latestItems = [];
+
 
 //Analytics------------------------
 var _gaq = _gaq || [];
@@ -24,12 +26,28 @@ function loadConfig(){
     chrome.storage.sync.get([
         'userDomain',
         'userCollection',
-        'userAccessToken'
+        'userAccessToken',
+        'userLatestItems'
         ], 
         function(items) {
             domain = items.userDomain;
             collection = items.userCollection;
             accesstoken = items.userAccessToken;
+            //if items where previously saved, assign them to local array
+            if(items.userLatestItems){
+                latestItems.length=0;
+                latestItems = items.userLatestItems;
+                console.log('previously saved items found');
+            }
+
+      /*     latestItems = [
+            [1,'https:url','test title1'],
+            [22,'https:url','test title2 is really long and looooooong and extra long'],
+            [333,'https:url','test title3 is really long and looooooong and extra long'],
+            [44444,'https:url','test title4 is really long and looooooong and extra long'],
+            [555555,'https:url','test title5 is really long and looooooong and extra long'] 
+            ];
+*/
 
             if(configIsValid()){ 
                 //set eventlisteners by script to avoid security issues
@@ -40,12 +58,43 @@ function loadConfig(){
                         document.getElementById("goButton").click();
                     } 
                 });
+
+                if(latestItems.length>0){
+                    showLatestItems();
+                }else{console.log('no item history')};
+
+                document.getElementById("workItemId").focus();
+
             }
             else{
                 err.invalidConfiguration();
             }
         }   
     );
+}
+
+function showLatestItems(){
+//appends li children to the ul list of the latest items, and then shows the ul list
+   
+    var divLatestItems = document.getElementById('latestItems');
+    var ulLatestItems = document.createElement('ul');
+
+    divLatestItems.appendChild(ulLatestItems);
+
+     console.log('length:'+ latestItems.length);
+
+    for(var i in latestItems){
+        var li=document.createElement('li');
+        li.className = 'listItem' + i;
+        ulLatestItems.appendChild(li);
+
+        li.innerHTML+= '<a href="'+
+            latestItems[i][1]+'" target="_blank" title="'+latestItems[i][2]+'">'+
+            latestItems[i][0]+': '+latestItems[i][2]+'</a>';
+
+            console.log(i + ': '+latestItems[i][0]);
+        }
+        divLatestItems.style.display='block';  
 }
 
 function formVstsApiUrl(wId){
@@ -61,7 +110,7 @@ function formWorkItemURL(teamProject,id){
 function configIsValid(){
     if(!(accesstoken&&domain&&collection)){
         return false;
-    }
+    } 
 return true;
 }
 
@@ -109,16 +158,33 @@ function errMsg(){
 function displayLoader(display){
 
     if(display){
-        document.getElementById('workItemId').style.display='none';
-        document.getElementById('goButton').style.display='none';
-        document.getElementById('loader').style.display='block';
+        document.getElementById('container').style.display='none';
+        document.getElementById('divLoader').style.display='block';
         }
     else{
-        document.getElementById('workItemId').style.display='block';
-        document.getElementById('goButton').style.display='block';
-        document.getElementById('loader').style.display='none';
+        document.getElementById('divLoader').style.display='none';
+        document.getElementById('container').style.display='block';
     }
 
+}
+
+function saveLatestItem(id,latestItemUrl,title){
+    //insert url,id and title in the first (0) place of the array
+    //then store the array
+
+    latestItems.unshift([id,latestItemUrl,title]);
+    
+    //Make sure the number of saved items in the array is max 5
+    if(latestItems.length>5){ 
+    latestItems.length = 5;
+    }
+
+    chrome.storage.sync.set({
+    'userLatestItems': latestItems
+  }, function() {
+    // Update 
+   console.log('stored latest items');
+  });
 }
 
 function GetItem() {
@@ -134,6 +200,7 @@ function GetItem() {
   
             displayLoader(true);
 
+        //make VSTS API Call to retrieve item info
             $.ajax({ 
                 url:formVstsApiUrl(id),
                 type: "GET",
@@ -141,8 +208,11 @@ function GetItem() {
                 headers: {
                     'Authorization': 'Basic ' + btoa("" + ":" + accesstoken)
                 },      
-                success: function(data){    
-                    window.open(formWorkItemURL(data.fields["System.TeamProject"],id) , '_newtab');
+                success: function(data){
+                    var goUrl = formWorkItemURL(data.fields["System.TeamProject"], id);  
+                    saveLatestItem(id,goUrl,data.fields["System.Title"]);
+                    console.log(data.fields["System.Title"]);
+                    window.open(goUrl , '_newtab');
                     displayLoader(false);
                 },
                 error: function (jqXHR, status, error) {
@@ -159,6 +229,7 @@ function GetItem() {
         err.invalidConfiguration();
     }
 }
+
 
 //Load userconfig on pageload
 document.addEventListener('DOMContentLoaded', loadConfig());
