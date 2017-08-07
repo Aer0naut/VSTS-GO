@@ -3,7 +3,7 @@
   "name": "VSTS GO",
   "short_name": "VSTS GO",
   "description": "This extension will send you to a specific workitem in your VSTS, given the id",
-  "version": "1.4",
+  "version": "1.5",
   "icons": { 
     "128": "VSTS-GO.png" 
   },
@@ -14,11 +14,11 @@
   },
   "permissions": [
    "activeTab",
+   "https://www.google-analytics.com/",
    "storage"
   ],
   "options_ui": {
     "page": "options.html",
     "chrome_style": false
-  },
-  "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'"
+  }
 }
