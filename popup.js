@@ -1,24 +1,20 @@
 var accesstoken;
 var domain;
 var collection;
+var analyticsId = 'UA-102907431-1';
+var analyticsService = 'vsts-go';
 var vstsApiVersion = "?api-version=3.0";
 var vstsApiUrl = "_apis/wit/workItems/";
 var err = new errMsg();
 var recentItems = [];
 
 
-//Analytics------------------------
-var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-102907431-1']);
-_gaq.push(['_trackPageview']);
-
-//Inserting by script to avoid security restraints in chrome extensions
-(function() {
-  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-  ga.src = 'https://ssl.google-analytics.com/ga.js';
-  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();
-//Analytics---------------------------------------
+//----------------Chrome Platform Analytics------------------------
+// https://github.com/GoogleChrome/chrome-platform-analytics/wiki
+var service = analytics.getService(analyticsService);
+var tracker = service.getTracker(analyticsId);
+tracker.sendAppView('MainView');
+//----------------Chrome Platform Analytics-------------------------
 
 //loads user configuration values and sets up click event, 
 //or dislplays option to configure
@@ -72,8 +68,6 @@ function showRecentItems(){
 
     divRecentItems.appendChild(ulRecentItems);
 
-     console.log('length:'+ recentItems.length);
-
     for(var i in recentItems){
         var li=document.createElement('li');
         li.className = 'listItem' + i;
@@ -82,8 +76,6 @@ function showRecentItems(){
         li.innerHTML+= '<a href="'+
             recentItems[i][1]+'" target="_blank" title="'+recentItems[i][2]+'">'+
             recentItems[i][0]+': '+recentItems[i][2]+'</a>';
-
-            console.log(i + ': '+recentItems[i][0]);
         }
         divRecentItems.style.display='block';  
 }
@@ -105,6 +97,27 @@ function configIsValid(){
 return true;
 }
 
+
+/**
+ * Can be used to extract the subdomain/accountname from the full url
+ * @param {string} strDomainUrl - a full url 
+ * @returns {string} - subdomain/accountname
+ */
+function getAccountName(strDomainUrl){
+    /*
+    Form validation in options only checks for 'http://' - not '.'
+    So check that the string actually contains a '.'
+    */
+   if(strDomainUrl.indexOf('.')>-1)
+    {
+        var accountName = strDomainUrl.split("//")[1].split(".")[0];
+        return accountName;
+    }
+//If the url doesn't contain a '.', return the URL
+return strDomainUrl;
+
+}
+
 function idIsValid(id){
     if(id && id>1 && id<999999999){
         return true;
@@ -117,6 +130,7 @@ function errMsg(){
 
     this.invalidConfiguration = function()
     {
+        tracker.sendAppView('InvalidConfigView');
         document.body.innerHTML = '<div class="error-Configure">'+
         '<h2>Please configure</h2>'+
         '<button id="go-to-options">Options</button>'+
@@ -133,6 +147,7 @@ function errMsg(){
     };
     
     this.requestError = function(msg){
+        tracker.sendAppView('RequestErrorView');
         rspText = jQuery.parseJSON(msg.responseText);
         document.body.innerHTML = '<div class="error-Request"><h2>Request error</h2>'+
         rspText.message;
@@ -140,6 +155,7 @@ function errMsg(){
     };
 
     this.idInvalid = function(){
+        tracker.sendAppView('InvalidIdView');
         document.body.innerHTML = '<div class="error-Id">'+
         '<h2>ID is invalid</h2>';
     }
@@ -160,7 +176,7 @@ function displayLoader(display){
 }
 
 function saveRecentItem(id,recentItemUrl,title){
-    //insert url,id and title in the first (0) place of the array
+    //insert url,id and title in the first place of the array
     //then store the array
 
     recentItems.unshift([id,recentItemUrl,title]);
@@ -186,10 +202,12 @@ function GetItem() {
         if(idIsValid(id))
         {
 
-        //Google Analytics--------- user requested an item, and config and id was valid
-        _gaq.push(['_trackEvent', 'GetItem', domain, id]);
-  
-            displayLoader(true);
+        var account = getAccountName(domain);
+        
+        //CPA - user requested an item, and config and id was valid
+        tracker.sendEvent('GetItem', account, id);
+ 
+        displayLoader(true);
 
         //make VSTS API Call to retrieve item info
             $.ajax({ 
@@ -202,12 +220,13 @@ function GetItem() {
                 success: function(data){
                     var goUrl = formWorkItemURL(data.fields["System.TeamProject"], id);  
                     saveRecentItem(id,goUrl,data.fields["System.Title"]);
-                    console.log(data.fields["System.Title"]);
+                    tracker.sendEvent('GetItem: Succes', account, id);
                     window.open(goUrl , '_newtab');
                     displayLoader(false);
                 },
                 error: function (jqXHR, status, error) {
                     displayLoader(false);
+                    tracker.sendEvent('GetItem: Error', account, id);
                     err.requestError(jqXHR);
                 }
             });

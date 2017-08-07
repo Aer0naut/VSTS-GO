@@ -18,6 +18,7 @@ border-radius: 5px;
 .column-right{float:right; width: 36px; }
 .error-Configure{min-width:150px; height: 100%;font-size: 10px;padding: 0px 5px 5px 5px}
 .error-Request{width: 200px; height: 100%;font-size: 10px;padding: 0px 5px 5px 5px}
+.error-Id{width: 130px;text-align: center;vertical-align: center;}
 
 label{
 font-weight:bold;
