@@ -16,7 +16,7 @@ function save_options() {
     userCollection: inCollection.value
   }, function() {
     // Update status to let user know options were saved.
-    txtStatus.textContent = '> Options saved!';
+    txtStatus.textContent = '> Options saved, you are good to GO!';
     // reset status message
     setTimeout(function() {
     txtStatus.textContent = '';
@@ -56,9 +56,21 @@ function restoreOptions() {
   });
 }
 
+function focusInAccessToken(){
+  if(inAccessToken.value=='<insert>')
+    inAccessToken.value='';
+}
+
+function blurInAccessToken(){
+  if(inAccessToken.value=='')
+    inAccessToken.value='<insert>';
+}
+
 function whenPageHasLoaded()
 {
   btnSave.addEventListener('click', save_options);
+  inAccessToken.addEventListener('focus', focusInAccessToken);
+  inAccessToken.addEventListener('blur', blurInAccessToken);
   restoreOptions();
 }
 
