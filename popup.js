@@ -1,18 +1,27 @@
 var accesstoken;
 var domain;
 var collection;
-var analyticsId = 'UA-102907431-1';
-var analyticsService = 'vsts-go';
-var vstsApiVersion = "?api-version=3.0";
-var vstsApiUrl = "_apis/wit/workItems/";
+
 var err = new errMsg();
 var recentItems = [];
+
+var settings = {
+
+    analytics:{
+        id: 'UA-102907431-1',
+        service: 'vsts-go'
+    },
+    vsts:{
+        apiVersion: 'api-version=3.0',
+        apiUrl: '_apis/wit/workItems',
+    }
+}
 
 
 //----------------Chrome Platform Analytics------------------------
 // https://github.com/GoogleChrome/chrome-platform-analytics/wiki
-var service = analytics.getService(analyticsService);
-var tracker = service.getTracker(analyticsId);
+var service = analytics.getService(settings.analytics.service);
+var tracker = service.getTracker(settings.analytics.id);
 tracker.sendAppView('MainView');
 //----------------Chrome Platform Analytics-------------------------
 
@@ -81,7 +90,11 @@ function showRecentItems(){
 }
 
 function formVstsApiUrl(wId){
-   var fullVstsApiUrl = domain+"/"+collection+"/"+vstsApiUrl+wId+vstsApiVersion;
+   var fullVstsApiUrl = domain + 
+   "/" + collection +
+   "/" + settings.vsts.apiUrl + 
+   "/" + wId +
+   "?" +settings.vsts.apiVersion;
    return fullVstsApiUrl;
 }
 
@@ -115,8 +128,8 @@ function getAccountName(strDomainUrl){
     }
 //If the url doesn't contain a '.', return the URL
 return strDomainUrl;
-
 }
+
 
 function idIsValid(id){
     if(id && id>1 && id<999999999){
